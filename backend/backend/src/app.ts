@@ -6,6 +6,7 @@ import { config } from './config';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
 import movieRoutes from './routes/movies';
+import groupRoutes from './routes/groups';
 
 const app = express();
 
@@ -27,6 +28,7 @@ mongoose.connect(config.mongodb.uri)
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
 app.use('/movies', movieRoutes);
+app.use('/groups', groupRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

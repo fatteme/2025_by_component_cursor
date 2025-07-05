@@ -14,19 +14,28 @@ const requiredFiles = [
   'src/models/User.ts',
   'src/models/Movie.ts',
   'src/models/Genre.ts',
+  'src/models/Group.ts',
+  'src/models/UserPreference.ts',
+  'src/models/VotingSession.ts',
   'src/services/authService.ts',
   'src/services/userService.ts',
   'src/services/movieService.ts',
   'src/services/tmdbService.ts',
+  'src/services/groupService.ts',
   'src/controllers/authController.ts',
   'src/controllers/userController.ts',
   'src/controllers/movieController.ts',
+  'src/controllers/groupController.ts',
   'src/middlewares/auth.ts',
+  'src/middlewares/groupAuth.ts',
   'src/routes/auth.ts',
   'src/routes/users.ts',
   'src/routes/movies.ts',
+  'src/routes/groups.ts',
+  'src/utils/invitationCode.ts',
   'user_manager.yml',
-  'movie_manager.yml'
+  'movie_manager.yml',
+  'voting_manager.yml'
 ];
 
 let allFilesExist = true;
@@ -42,6 +51,7 @@ if (allFilesExist) {
   console.log('✅ Project structure is complete');
   console.log('✅ User Manager component implemented');
   console.log('✅ Movie Manager component implemented');
+  console.log('✅ Voting Manager component implemented');
   console.log('✅ Ready for implementation');
 } else {
   console.log('❌ Some files are missing');
@@ -53,4 +63,5 @@ console.log('1. Run: npm install');
 console.log('2. Create .env file with your configuration');
 console.log('3. Start MongoDB');
 console.log('4. Run: npm run dev');
-console.log('5. Sync genres: POST /movies/sync-genres'); 
+console.log('5. Sync genres: POST /movies/sync-genres');
+console.log('6. Create groups and start voting sessions!'); 
