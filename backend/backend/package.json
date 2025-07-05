@@ -1,0 +1,19 @@
+{
+  "name": "movieswipe-backend",
+  "version": "0.1.0",
+  "description": "Backend for MovieSwipe - group movie recommendation and voting platform.",
+  "main": "dist/server.js",
+  "scripts": {
+    "start": "node dist/server.js",
+    "dev": "ts-node-dev src/server.ts",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^7.6.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "ts-node-dev": "^2.0.0"
+  }
+} 
