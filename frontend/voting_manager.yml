@@ -1,0 +1,840 @@
+openapi: 3.0.3
+info:
+  title: MovieSwipe Voting Manager API
+  description: API for group management, voting sessions, and movie voting functionality
+  version: 1.0.0
+  contact:
+    name: MovieSwipe Team
+    email: support@movieswipe.com
+
+servers:
+  - url: http://localhost:3000
+    description: Development server
+  - url: https://api.movieswipe.com
+    description: Production server
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from Google authentication
+
+  schemas:
+    Group:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Group's unique identifier
+          example: "507f1f77bcf86cd799439011"
+        name:
+          type: string
+          description: Group name
+          example: "Movie Night Crew"
+        ownerId:
+          type: string
+          description: Group owner's user ID
+          example: "507f1f77bcf86cd799439012"
+        invitationCode:
+          type: string
+          description: Unique invitation code for joining the group
+          example: "ABC12345"
+        members:
+          type: array
+          items:
+            type: string
+          description: Array of member user IDs
+          example: ["507f1f77bcf86cd799439012", "507f1f77bcf86cd799439013"]
+        isActive:
+          type: boolean
+          description: Whether the group is active
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+          description: Group creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+      required:
+        - id
+        - name
+        - ownerId
+        - invitationCode
+        - members
+        - isActive
+
+    UserPreference:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Preference's unique identifier
+          example: "507f1f77bcf86cd799439014"
+        userId:
+          type: string
+          description: User's unique identifier
+          example: "507f1f77bcf86cd799439012"
+        groupId:
+          type: string
+          description: Group's unique identifier
+          example: "507f1f77bcf86cd799439011"
+        preferredGenres:
+          type: array
+          items:
+            type: integer
+          description: Array of preferred genre IDs
+          example: [28, 12, 35]
+        createdAt:
+          type: string
+          format: date-time
+          description: Preference creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+      required:
+        - id
+        - userId
+        - groupId
+        - preferredGenres
+
+    VotingSession:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Voting session's unique identifier
+          example: "507f1f77bcf86cd799439015"
+        groupId:
+          type: string
+          description: Group's unique identifier
+          example: "507f1f77bcf86cd799439011"
+        movies:
+          type: array
+          items:
+            type: integer
+          description: Array of TMDB movie IDs for voting
+          example: [550, 680, 13, 155]
+        isActive:
+          type: boolean
+          description: Whether the voting session is active
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+          description: Session creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+      required:
+        - id
+        - groupId
+        - movies
+        - isActive
+
+    Vote:
+      type: object
+      properties:
+        userId:
+          type: string
+          description: User's unique identifier
+          example: "507f1f77bcf86cd799439012"
+        movieId:
+          type: integer
+          description: TMDB movie ID
+          example: 550
+        vote:
+          type: string
+          enum: [yes, no]
+          description: User's vote on the movie
+          example: "yes"
+      required:
+        - userId
+        - movieId
+        - vote
+
+    VotingResult:
+      type: object
+      properties:
+        movieId:
+          type: integer
+          description: TMDB movie ID
+          example: 550
+        yesVotes:
+          type: integer
+          description: Number of yes votes
+          example: 3
+        noVotes:
+          type: integer
+          description: Number of no votes
+          example: 1
+        totalVotes:
+          type: integer
+          description: Total number of votes
+          example: 4
+        score:
+          type: number
+          format: float
+          description: Score (0-1) based on yes votes
+          example: 0.75
+      required:
+        - movieId
+        - yesVotes
+        - noVotes
+        - totalVotes
+        - score
+
+    CreateGroupRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Group name
+          example: "Movie Night Crew"
+      required:
+        - name
+
+    UpdateGroupRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: New group name
+          example: "Updated Movie Night Crew"
+      required:
+        - name
+
+    JoinGroupRequest:
+      type: object
+      properties:
+        invitationCode:
+          type: string
+          description: Group invitation code
+          example: "ABC12345"
+      required:
+        - invitationCode
+
+    SetPreferencesRequest:
+      type: object
+      properties:
+        preferredGenres:
+          type: array
+          items:
+            type: integer
+          description: Array of preferred genre IDs
+          example: [28, 12, 35]
+      required:
+        - preferredGenres
+
+    SubmitVoteRequest:
+      type: object
+      properties:
+        movieId:
+          type: integer
+          description: TMDB movie ID
+          example: 550
+        vote:
+          type: string
+          enum: [yes, no]
+          description: User's vote on the movie
+          example: "yes"
+      required:
+        - movieId
+        - vote
+
+    GroupResponse:
+      type: object
+      properties:
+        group:
+          $ref: '#/components/schemas/Group'
+
+    GroupsResponse:
+      type: object
+      properties:
+        groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/Group'
+
+    PreferenceResponse:
+      type: object
+      properties:
+        preference:
+          $ref: '#/components/schemas/UserPreference'
+
+    PreferencesResponse:
+      type: object
+      properties:
+        preferences:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserPreference'
+
+    VotingSessionResponse:
+      type: object
+      properties:
+        votingSession:
+          $ref: '#/components/schemas/VotingSession'
+
+    VotingResultsResponse:
+      type: object
+      properties:
+        results:
+          type: object
+          properties:
+            sessionId:
+              type: string
+              example: "507f1f77bcf86cd799439015"
+            isActive:
+              type: boolean
+              example: false
+            movies:
+              type: array
+              items:
+                type: integer
+              example: [550, 680, 13, 155]
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/VotingResult'
+            bestMatch:
+              $ref: '#/components/schemas/VotingResult'
+
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Success message
+          example: "Group created successfully"
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: "Group not found"
+
+paths:
+  /groups:
+    post:
+      summary: Create a new group
+      description: Creates a new group and makes the creator the owner
+      tags:
+        - Groups
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGroupRequest'
+            example:
+              name: "Movie Night Crew"
+      responses:
+        '201':
+          description: Group created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupResponse'
+              example:
+                group: {
+                  "id": "507f1f77bcf86cd799439011",
+                  "name": "Movie Night Crew",
+                  "ownerId": "507f1f77bcf86cd799439012",
+                  "invitationCode": "ABC12345",
+                  "members": ["507f1f77bcf86cd799439012"],
+                  "isActive": true
+                }
+        '400':
+          description: Bad request - missing or invalid group name
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Group name is required"
+        '401':
+          description: Unauthorized - invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Access token required"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Failed to create group"
+
+  /groups/{id}:
+    get:
+      summary: Get group details
+      description: Retrieves detailed information about a specific group
+      tags:
+        - Groups
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Group ID
+          example: "507f1f77bcf86cd799439011"
+      responses:
+        '200':
+          description: Group details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupResponse'
+        '403':
+          description: Forbidden - user is not a member of the group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "You must be a member of this group"
+        '404':
+          description: Group not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Group not found"
+
+    put:
+      summary: Update group
+      description: Updates group information (owner only)
+      tags:
+        - Groups
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Group ID
+          example: "507f1f77bcf86cd799439011"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGroupRequest'
+            example:
+              name: "Updated Movie Night Crew"
+      responses:
+        '200':
+          description: Group updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupResponse'
+        '403':
+          description: Forbidden - user is not the group owner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Only group owner can update the group"
+
+    delete:
+      summary: Delete group
+      description: Deactivates a group (owner only)
+      tags:
+        - Groups
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Group ID
+          example: "507f1f77bcf86cd799439011"
+      responses:
+        '200':
+          description: Group deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              example:
+                message: "Group deleted successfully"
+        '403':
+          description: Forbidden - user is not the group owner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Only group owner can delete the group"
+
+  /groups/join:
+    post:
+      summary: Join group with invitation code
+      description: Joins a group using an invitation code
+      tags:
+        - Groups
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JoinGroupRequest'
+            example:
+              invitationCode: "ABC12345"
+      responses:
+        '200':
+          description: Successfully joined group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupResponse'
+        '400':
+          description: Bad request - invalid invitation code or already a member
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "User is already a member of this group"
+        '404':
+          description: Invalid invitation code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Invalid invitation code"
+
+  /groups/{id}/preferences:
+    post:
+      summary: Set user preferences for group
+      description: Sets or updates user's movie genre preferences for a specific group
+      tags:
+        - Preferences
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Group ID
+          example: "507f1f77bcf86cd799439011"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetPreferencesRequest'
+            example:
+              preferredGenres: [28, 12, 35]
+      responses:
+        '200':
+          description: Preferences set successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PreferenceResponse'
+        '403':
+          description: Forbidden - user is not a member of the group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "You must be a member of this group"
+
+    get:
+      summary: Get group preferences
+      description: Retrieves all user preferences for a group
+      tags:
+        - Preferences
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Group ID
+          example: "507f1f77bcf86cd799439011"
+      responses:
+        '200':
+          description: Group preferences retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PreferencesResponse'
+        '403':
+          description: Forbidden - user is not a member of the group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "You must be a member of this group"
+
+  /groups/{id}/voting-sessions:
+    post:
+      summary: Start voting session
+      description: Starts a new voting session for the group (owner only)
+      tags:
+        - Voting
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Group ID
+          example: "507f1f77bcf86cd799439011"
+      responses:
+        '201':
+          description: Voting session started successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VotingSessionResponse'
+              example:
+                votingSession: {
+                  "id": "507f1f77bcf86cd799439015",
+                  "groupId": "507f1f77bcf86cd799439011",
+                  "movies": [550, 680, 13, 155],
+                  "isActive": true,
+                  "createdAt": "2024-01-01T00:00:00.000Z"
+                }
+        '403':
+          description: Forbidden - user is not the group owner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Only group owner can start voting session"
+
+  /groups/voting-sessions/{sessionId}:
+    get:
+      summary: Get voting session details
+      description: Retrieves details about a specific voting session
+      tags:
+        - Voting
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Voting session ID
+          example: "507f1f77bcf86cd799439015"
+      responses:
+        '200':
+          description: Voting session details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VotingSessionResponse'
+        '403':
+          description: Forbidden - user is not a member of the group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "You must be a member of this group"
+        '404':
+          description: Voting session not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Voting session not found"
+
+  /groups/voting-sessions/{sessionId}/votes:
+    post:
+      summary: Submit a vote
+      description: Submits a vote (yes/no) for a specific movie in a voting session
+      tags:
+        - Voting
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Voting session ID
+          example: "507f1f77bcf86cd799439015"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitVoteRequest'
+            example:
+              movieId: 550
+              vote: "yes"
+      responses:
+        '200':
+          description: Vote submitted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Vote submitted successfully"
+                  votingSession:
+                    $ref: '#/components/schemas/VotingSession'
+        '400':
+          description: Bad request - invalid movie ID or vote
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Movie ID and vote (yes/no) are required"
+        '403':
+          description: Forbidden - user is not a member of the group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "You must be a member of this group"
+        '404':
+          description: Voting session not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Voting session not found"
+
+  /groups/voting-sessions/{sessionId}/end:
+    put:
+      summary: End voting session
+      description: Ends a voting session and returns results (owner only)
+      tags:
+        - Voting
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Voting session ID
+          example: "507f1f77bcf86cd799439015"
+      responses:
+        '200':
+          description: Voting session ended successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Voting session ended successfully"
+                  results:
+                    $ref: '#/components/schemas/VotingResultsResponse'
+        '403':
+          description: Forbidden - user is not the group owner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Only group owner can end voting session"
+        '404':
+          description: Voting session not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Voting session not found"
+
+  /groups/voting-sessions/{sessionId}/results:
+    get:
+      summary: Get voting results
+      description: Retrieves voting results for a specific session
+      tags:
+        - Voting
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Voting session ID
+          example: "507f1f77bcf86cd799439015"
+      responses:
+        '200':
+          description: Voting results retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VotingResultsResponse'
+        '403':
+          description: Forbidden - user is not a member of the group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "You must be a member of this group"
+        '404':
+          description: Voting session not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Voting session not found"
+
+tags:
+  - name: Groups
+    description: Group management operations
+  - name: Preferences
+    description: User preference management
+  - name: Voting
+    description: Voting session and vote management 
