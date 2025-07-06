@@ -2,8 +2,11 @@ package com.example.movieswipe.di
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.example.movieswipe.data.remote.MovieApiService
 import com.example.movieswipe.data.remote.UserApiService
+import com.example.movieswipe.data.repository.MovieRepositoryImpl
 import com.example.movieswipe.data.repository.UserRepositoryImpl
+import com.example.movieswipe.domain.repository.MovieRepository
 import com.example.movieswipe.domain.repository.UserRepository
 import dagger.Binds
 import dagger.Module
@@ -36,6 +39,11 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideMovieApiService(retrofit: Retrofit): MovieApiService =
+        retrofit.create(MovieApiService::class.java)
+
+    @Provides
+    @Singleton
     fun provideSharedPreferences(@ApplicationContext context: Context): SharedPreferences =
         context.getSharedPreferences("movieswipe_prefs", Context.MODE_PRIVATE)
 
@@ -45,4 +53,10 @@ object AppModule {
         api: UserApiService,
         prefs: SharedPreferences
     ): UserRepository = UserRepositoryImpl(api, prefs)
+
+    @Provides
+    @Singleton
+    fun provideMovieRepository(
+        api: MovieApiService
+    ): MovieRepository = MovieRepositoryImpl(api)
 }

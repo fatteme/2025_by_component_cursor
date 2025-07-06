@@ -1,0 +1,404 @@
+openapi: 3.0.3
+info:
+  title: MovieSwipe Movie Manager API
+  description: API for movie management, TMDB integration, and intelligent movie recommendations
+  version: 1.0.0
+  contact:
+    name: MovieSwipe Team
+    email: support@movieswipe.com
+
+servers:
+  - url: http://localhost:3000
+    description: Development server
+  - url: https://api.movieswipe.com
+    description: Production server
+
+components:
+  schemas:
+    Genre:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: Genre's unique identifier
+          example: "507f1f77bcf86cd799439011"
+        tmdbId:
+          type: integer
+          description: TMDB genre ID
+          example: 28
+        name:
+          type: string
+          description: Genre name
+          example: "Action"
+        createdAt:
+          type: string
+          format: date-time
+          description: Genre creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+      required:
+        - tmdbId
+        - name
+
+    Movie:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: Movie's unique identifier
+          example: "507f1f77bcf86cd799439011"
+        tmdbId:
+          type: integer
+          description: TMDB movie ID
+          example: 550
+        title:
+          type: string
+          description: Movie title
+          example: "Fight Club"
+        overview:
+          type: string
+          description: Movie overview/description
+          example: "A ticking-time-bomb insomniac and a slippery soap salesman channel primal male aggression into a shocking new form of therapy."
+        posterPath:
+          type: string
+          description: TMDB poster path
+          example: "/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg"
+        posterUrl:
+          type: string
+          description: Full poster URL
+          example: "https://image.tmdb.org/t/p/w500/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg"
+        releaseDate:
+          type: string
+          format: date
+          description: Movie release date
+          example: "1999-10-15"
+        genres:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 18
+              name:
+                type: string
+                example: "Drama"
+          description: Movie genres
+        rating:
+          type: number
+          format: float
+          description: TMDB vote average
+          example: 8.8
+        createdAt:
+          type: string
+          format: date-time
+          description: Movie creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+      required:
+        - tmdbId
+        - title
+        - overview
+        - posterPath
+        - releaseDate
+        - genres
+        - rating
+
+    UserPreference:
+      type: object
+      properties:
+        userId:
+          type: string
+          description: User's unique identifier
+          example: "507f1f77bcf86cd799439011"
+        preferredGenres:
+          type: array
+          items:
+            type: integer
+          description: Array of preferred genre IDs
+          example: [28, 12, 35]
+      required:
+        - userId
+        - preferredGenres
+
+    MovieRecommendation:
+      type: object
+      properties:
+        movie:
+          $ref: '#/components/schemas/Movie'
+        score:
+          type: number
+          format: float
+          description: Recommendation score (0-1)
+          example: 0.85
+        matchedGenres:
+          type: array
+          items:
+            type: string
+          description: Array of matched genre IDs
+          example: ["28", "12"]
+
+    GenresResponse:
+      type: object
+      properties:
+        genres:
+          type: array
+          items:
+            $ref: '#/components/schemas/Genre'
+          description: List of available movie genres
+
+    MovieResponse:
+      type: object
+      properties:
+        movie:
+          $ref: '#/components/schemas/Movie'
+          description: Movie details
+
+    RecommendationRequest:
+      type: object
+      properties:
+        userPreferences:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserPreference'
+          description: Array of user preferences for the group
+      required:
+        - userPreferences
+
+    RecommendationResponse:
+      type: object
+      properties:
+        recommendation:
+          $ref: '#/components/schemas/MovieRecommendation'
+          description: Recommended movie with score and matched genres
+
+    SyncResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Success message
+          example: "Genres synced successfully"
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: "Failed to fetch genres"
+
+paths:
+  /movies/genres:
+    get:
+      summary: Get available movie genres
+      description: Retrieves all available movie genres from the database (synced from TMDB)
+      tags:
+        - Movies
+      responses:
+        '200':
+          description: List of genres retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenresResponse'
+              example:
+                genres: [
+                  {
+                    "_id": "507f1f77bcf86cd799439011",
+                    "tmdbId": 28,
+                    "name": "Action",
+                    "createdAt": "2024-01-01T00:00:00.000Z",
+                    "updatedAt": "2024-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "_id": "507f1f77bcf86cd799439012",
+                    "tmdbId": 12,
+                    "name": "Adventure",
+                    "createdAt": "2024-01-01T00:00:00.000Z",
+                    "updatedAt": "2024-01-01T00:00:00.000Z"
+                  }
+                ]
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Failed to fetch genres"
+
+  /movies/{id}:
+    get:
+      summary: Get movie details
+      description: Retrieves detailed information about a specific movie by TMDB ID
+      tags:
+        - Movies
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: TMDB movie ID
+          example: 550
+      responses:
+        '200':
+          description: Movie details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MovieResponse'
+              example:
+                movie: {
+                  "_id": "507f1f77bcf86cd799439011",
+                  "tmdbId": 550,
+                  "title": "Fight Club",
+                  "overview": "A ticking-time-bomb insomniac and a slippery soap salesman channel primal male aggression into a shocking new form of therapy.",
+                  "posterPath": "/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg",
+                  "posterUrl": "https://image.tmdb.org/t/p/w500/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg",
+                  "releaseDate": "1999-10-15",
+                  "genres": [
+                    {
+                      "id": 18,
+                      "name": "Drama"
+                    }
+                  ],
+                  "rating": 8.8,
+                  "createdAt": "2024-01-01T00:00:00.000Z",
+                  "updatedAt": "2024-01-01T00:00:00.000Z"
+                }
+        '400':
+          description: Invalid movie ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Invalid movie ID"
+        '404':
+          description: Movie not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Movie not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Failed to fetch movie details"
+
+  /movies/recommend:
+    post:
+      summary: Generate movie recommendation
+      description: Generates an intelligent movie recommendation based on group member preferences
+      tags:
+        - Movies
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecommendationRequest'
+            example:
+              userPreferences: [
+                {
+                  "userId": "507f1f77bcf86cd799439011",
+                  "preferredGenres": [28, 12, 35]
+                },
+                {
+                  "userId": "507f1f77bcf86cd799439012",
+                  "preferredGenres": [18, 14, 27]
+                }
+              ]
+      responses:
+        '200':
+          description: Movie recommendation generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecommendationResponse'
+              example:
+                recommendation: {
+                  "movie": {
+                    "_id": "507f1f77bcf86cd799439011",
+                    "tmdbId": 550,
+                    "title": "Fight Club",
+                    "overview": "A ticking-time-bomb insomniac and a slippery soap salesman channel primal male aggression into a shocking new form of therapy.",
+                    "posterPath": "/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg",
+                    "posterUrl": "https://image.tmdb.org/t/p/w500/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg",
+                    "releaseDate": "1999-10-15",
+                    "genres": [
+                      {
+                        "id": 18,
+                        "name": "Drama"
+                      }
+                    ],
+                    "rating": 8.8,
+                    "createdAt": "2024-01-01T00:00:00.000Z",
+                    "updatedAt": "2024-01-01T00:00:00.000Z"
+                  },
+                  "score": 0.85,
+                  "matchedGenres": ["18"]
+                }
+        '400':
+          description: Invalid request - missing or invalid user preferences
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "User preferences are required"
+        '404':
+          description: No suitable movie found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "No suitable movie found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Failed to generate movie recommendation"
+
+  /movies/sync-genres:
+    post:
+      summary: Sync genres from TMDB
+      description: Synchronizes movie genres from TMDB API to local database
+      tags:
+        - Movies
+      responses:
+        '200':
+          description: Genres synced successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncResponse'
+              example:
+                message: "Genres synced successfully"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Failed to sync genres"
+
+tags:
+  - name: Movies
+    description: Movie management and recommendation operations 

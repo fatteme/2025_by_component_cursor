@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.movieswipe.ui.auth.AuthViewModel
+import com.example.movieswipe.ui.movie.GenreSelectionScreen
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.identity.SignInClient
@@ -73,12 +73,8 @@ fun AuthScreen(viewModel: AuthViewModel = hiltViewModel()) {
                 Text(error ?: "", color = MaterialTheme.colorScheme.error)
             }
         } else {
-            Text("Welcome, ${user?.name}")
-            Text("Email: ${user?.email}")
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = { viewModel.logout() }) {
-                Text("Logout")
-            }
+            // Instead of showing just the profile, show the genre selection and recommendation flow
+            GenreSelectionScreen(userId = user!!.id)
         }
     }
 }

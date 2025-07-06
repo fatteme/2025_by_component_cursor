@@ -1,6 +1,10 @@
 package com.example.movieswipe.domain.repository
 
+import com.example.movieswipe.domain.model.Genre
+import com.example.movieswipe.domain.model.Movie
 import com.example.movieswipe.domain.model.User
+import com.example.movieswipe.domain.model.MovieRecommendation
+import com.example.movieswipe.domain.model.UserPreference
 
 // Repository interfaces for abstracting data operations
 interface GroupRepository {
@@ -8,7 +12,9 @@ interface GroupRepository {
 }
 
 interface MovieRepository {
-    // ...to be implemented
+    suspend fun getGenres(): Result<List<Genre>>
+    suspend fun getMovie(tmdbId: Int): Result<Movie>
+    suspend fun recommendMovie(userPreferences: List<UserPreference>): Result<MovieRecommendation>
 }
 
 interface UserRepository {
