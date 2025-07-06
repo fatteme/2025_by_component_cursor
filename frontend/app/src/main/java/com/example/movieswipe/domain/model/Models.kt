@@ -3,8 +3,11 @@ package com.example.movieswipe.domain.model
 // Data models for MovieSwipe (User, Group, Movie, etc.)
 data class User(
     val id: String,
-    val name: String
-    // ...other fields
+    val googleId: String,
+    val name: String,
+    val email: String,
+    val createdAt: String?,
+    val updatedAt: String?
 )
 
 data class Group(
@@ -20,4 +23,3 @@ data class Movie(
     val genres: List<String>
     // ...other fields
 )
-
