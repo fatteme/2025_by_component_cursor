@@ -13,8 +13,10 @@ data class User(
 data class Group(
     val id: String,
     val name: String,
-    val ownerId: String
-    // ...other fields
+    val ownerId: String,
+    val invitationCode: String?,
+    val members: List<User> = emptyList(),
+    val preferences: Map<String, List<Int>> = emptyMap() // userId -> genre ids
 )
 
 data class Genre(
@@ -53,4 +55,25 @@ data class MovieRecommendation(
     val movie: Movie,
     val score: Float,
     val matchedGenres: List<String>
+)
+
+data class VotingSession(
+    val id: String,
+    val groupId: String,
+    val isActive: Boolean,
+    val movies: List<Movie>,
+    val votes: List<Vote> = emptyList(),
+    val startedAt: String?,
+    val endedAt: String?
+)
+
+data class Vote(
+    val userId: String,
+    val movieTmdbId: Int,
+    val vote: Boolean // true = yes, false = no
+)
+
+data class VotingResult(
+    val matchedMovie: Movie?,
+    val votes: List<Vote>
 )

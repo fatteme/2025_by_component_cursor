@@ -4,10 +4,13 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.example.movieswipe.data.remote.MovieApiService
 import com.example.movieswipe.data.remote.UserApiService
+import com.example.movieswipe.data.remote.GroupApiService
 import com.example.movieswipe.data.repository.MovieRepositoryImpl
 import com.example.movieswipe.data.repository.UserRepositoryImpl
+import com.example.movieswipe.data.repository.GroupRepositoryImpl
 import com.example.movieswipe.domain.repository.MovieRepository
 import com.example.movieswipe.domain.repository.UserRepository
+import com.example.movieswipe.domain.repository.GroupRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -44,6 +47,11 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideGroupApiService(retrofit: Retrofit): GroupApiService =
+        retrofit.create(GroupApiService::class.java)
+
+    @Provides
+    @Singleton
     fun provideSharedPreferences(@ApplicationContext context: Context): SharedPreferences =
         context.getSharedPreferences("movieswipe_prefs", Context.MODE_PRIVATE)
 
@@ -59,4 +67,10 @@ object AppModule {
     fun provideMovieRepository(
         api: MovieApiService
     ): MovieRepository = MovieRepositoryImpl(api)
+
+    @Provides
+    @Singleton
+    fun provideGroupRepository(
+        api: GroupApiService
+    ): GroupRepository = GroupRepositoryImpl(api)
 }
